@@ -87,15 +87,18 @@ function love.draw()
 		for index,Enemy in ipairs(EnemyArray) do
 			love.graphics.draw(Enemy.image, Enemy.x, Enemy.y)
 		end
-		
+
 		-- Draw player
 		love.graphics.draw(Player.image, Player.x, Player.y)
-		
+
 		-- Draw bullets
 		for index,Bullet in ipairs(Player.bullets) do
 			love.graphics.circle("fill", Bullet.x, Bullet.y, 3, 100)
 		end
 		
+		-- Draw score
+		love.graphics.print("Score:" .. Player.score)
+
 		-- Draw stars
 		love.graphics.setColor(255,248,153)
 		for index,Star in ipairs(Game.stars) do
@@ -132,9 +135,10 @@ function love.update(dt)
 		-- Do the enemy stuff
 		adjustImages()
 		moveEnemies()
-		
+
 		-- Do bullet stuff
 		moveBullets()
+		checkBullets()
 	end
 end
 
@@ -184,14 +188,16 @@ end
 
 -- Add a new enemy to the game
 function spawnEnemy()
-	table.insert(EnemyArray,{x = 1280, y = love.math.random(0,680), health = love.math.random(1,5), image = nil})
+	val = love.math.random(1,5)
+	table.insert(EnemyArray,{x = 1280, y = love.math.random(0,680), health = val, start = val, image = nil})
 end
 
 -- Assign the images to the enemies
 function adjustImages()
 	if (EnemyArray ~= nil) then
 		for index,Enemy in ipairs(EnemyArray) do
-			if Enemy.health == 1 then Enemy.image = Images.game.one
+			if Enemy.health == 0 then table.remove(EnemyArray,index)
+			elseif Enemy.health == 1 then Enemy.image = Images.game.one
 			elseif Enemy.health == 2 then Enemy.image = Images.game.two
 			elseif Enemy.health == 3 then Enemy.image = Images.game.three
 			elseif Enemy.health == 4 then Enemy.image = Images.game.four
@@ -224,5 +230,19 @@ function moveBullets()
 			table.remove(Player.bullets,index)
 		end
 		Bullet.x = Bullet.x + 4
+	end
+end
+
+-- Check bullets for hitting enemies
+function checkBullets()
+	for index,Enemy in ipairs(EnemyArray) do
+		for dingo,Bullet in ipairs(Player.bullets) do
+			if(Bullet.x > Enemy.x and Bullet.x < Enemy.x + 40) then
+				if(Bullet.y > Enemy.y and Bullet.y < Enemy.y + 40) then
+					Enemy.health = Enemy.health - 1
+					table.remove(Player.bullets,dingo)
+				end
+			end
+		end
 	end
 end
